@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>科拉茨猜想演示</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      width: 90%;
+      max-width: 800px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 25px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      line-height: 1.8;
+      color: #dbeafe;
+    }
+
+    .input-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #38bdf8;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #0ea5e9;
+    }
+
+    .result {
+      margin-top: 25px;
+      background: rgba(255,255,255,0.06);
+      padding: 20px;
+      border-radius: 18px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .number {
+      display: inline-block;
+      margin: 5px;
+      padding: 8px 12px;
+      background: rgba(56,189,248,0.2);
+      border-radius: 10px;
+    }
+
+    .steps {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #facc15;
+    }
+
+    canvas {
+      width: 100%;
+      margin-top: 25px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔢 科拉茨猜想演示</h1>
+
+    <p>
+      科拉茨猜想（Collatz Conjecture）：
+      <br><br>
+      1️⃣ 如果数字是偶数，就除以 2
+      <br>
+      2️⃣ 如果数字是奇数，就乘以 3 再加 1
+      <br><br>
+      重复执行后，最后一定会回到 1。
+    </p>
+
+    <div class="input-box">
+      <input type="number" id="num" placeholder="输入一个正整数" min="1">
+      <button onclick="runCollatz()">开始计算 🚀</button>
+    </div>
+
+    <div class="result" id="result">
+      等待输入数字...
+    </div>
+
+    <canvas id="graph" height="300"></canvas>
+  </div>
+
+  <script>
+    function collatz(n) {
+      const sequence = [n];
+
+      while (n !== 1) {
+        if (n % 2 === 0) {
+          n = n / 2;
+        } else {
+          n = n * 3 + 1;
+        }
+        sequence.push(n);
+      }
+
+      return sequence;
+    }
+
+    function runCollatz() {
+      const input = document.getElementById('num').value;
+      const resultDiv = document.getElementById('result');
+
+      if (!input || input <= 0) {
+        resultDiv.innerHTML = '❌ 请输入正确的正整数';
+        return;
+      }
+
+      const sequence = collatz(parseInt(input));
+
+      resultDiv.innerHTML = `
+        <div>
+          ${sequence.map(n => `<span class="number">${n}</span>`).join('➡️')}
+        </div>
+        <div class="steps">
+          共执行 ${sequence.length - 1} 步后回到 1
+        </div>
+      `;
+
+      drawGraph(sequence);
+    }
+
+    function drawGraph(sequence) {
+      const canvas = document.getElementById('graph');
+      const ctx = canvas.getContext('2d');
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const maxVal = Math.max(...sequence);
+      const padding = 30;
+
+      ctx.beginPath();
+
+      sequence.forEach((val, i) => {
+        const x = padding + (i / (sequence.length - 1 || 1)) * (canvas.width - padding * 2);
+        const y = canvas.height - padding - (val / maxVal) * (canvas.height - padding * 2);
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  </script>
+</body>
+</html>
